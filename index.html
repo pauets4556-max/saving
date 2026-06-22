@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SavingSync - Control inteligente de tu ahorro y gastos personales. App web gratuita para gestionar finanzas.">
+    <meta name="keywords" content="ahorro, gastos, finanzas, app, presupuesto, control financiero">
+    <meta name="theme-color" content="#0a0e27">
+    <title>SavingSync - Control de Ahorro y Gastos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0e27, #1a1a3e, #0f0f2e);
+            color: #00ff88;
+            overflow-x: hidden;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            max-width: 600px;
+            background: rgba(30, 30, 60, 0.9);
+            border: 2px solid #8b5ce6;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.4);
+            animation: glow 3s ease-in-out infinite;
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.4); }
+            50% { box-shadow: 0 0 60px rgba(0, 255, 136, 0.3); }
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #00ffcc;
+            text-shadow: 0 0 20px #00ff88, 0 0 40px #8b5ce6;
+            letter-spacing: 3px;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: #00ff88;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+        .description {
+            font-size: 14px;
+            color: #00ff88;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+            font-size: 12px;
+        }
+        .feature {
+            background: rgba(15, 15, 46, 0.9);
+            border: 1px solid #8b5ce6;
+            border-radius: 6px;
+            padding: 12px;
+            color: #00ff88;
+        }
+        .feature-icon {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+        .btn-container {
+            display: flex;
+            gap: 12px;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 15px 30px;
+            border: 2px solid #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-family: inherit;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            transform: scale(1.05);
+        }
+        .btn-secondary {
+            border-color: #8b5ce6;
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5ce6;
+        }
+        .btn-secondary:hover {
+            background: rgba(139, 92, 246, 0.2);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+        .info {
+            font-size: 11px;
+            color: #00ff88;
+            opacity: 0.6;
+            margin-top: 20px;
+            border-top: 1px solid #8b5ce6;
+            padding-top: 15px;
+        }
+        .loader {
+            display: none;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 3px solid #8b5ce6;
+            border-top: 3px solid #00ff88;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            color: #00ff88;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        @media (max-width: 600px) {
+            .content {
+                padding: 25px;
+            }
+            h1 {
+                font-size: 36px;
+            }
+            .features {
+                grid-template-columns: 1fr;
+            }
+            .btn-container {
+                flex-direction: column;
+            }
+        }
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #00ff88;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <h1>💾 SAVINGSYNC</h1>
+            <div class="subtitle">Control Inteligente de tu Ahorro</div>
+            
+            <div class="description">
+                Gestiona tus gastos diarios, analiza tus patrones de gasto y controla tu ahorro acumulado. Una aplicación web moderna y segura para tus finanzas personales.
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🔐</div>
+                    <div>Login Seguro</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📝</div>
+                    <div>Registra Gastos</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <div>Análisis Mensual</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">💰</div>
+                    <div>Seguimiento Ahorro</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🏷️</div>
+                    <div>Categorías Custom</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📱</div>
+                    <div>100% Responsive</div>
+                </div>
+            </div>
+
+            <div id="content-normal">
+                <div class="btn-container">
+                    <a href="savingsync-login.html" class="btn">🚀 INICIAR APP</a>
+                    <a href="docs/GUIDE.md" class="btn btn-secondary" target="_blank">📖 VER GUÍA</a>
+                </div>
+
+                <div class="info">
+                    ✓ Sin conexión a internet requerida<br>
+                    ✓ Datos guardados localmente en tu dispositivo<br>
+                    ✓ Completamente gratuito y open source<br>
+                    <br>
+                    <strong>GitHub:</strong> pauets4556-max/Saving
+                </div>
+            </div>
+
+            <div class="loader" id="loader">
+                <div class="spinner"></div>
+                <div class="loading-text">Cargando app...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Made with ❤️ for personal finance management • SavingSync v1.0.0
+    </div>
+
+    <script>
+        // Verificar si la app está disponible
+        fetch('savingsync-login.html')
+            .catch(error => {
+                console.log('App disponible localmente');
+            });
+
+        // Agregar evento al botón
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.querySelector('.btn');
+            btn.addEventListener('click', function(e) {
+                // Mostrar loader
+                document.getElementById('content-normal').style.display = 'none';
+                document.getElementById('loader').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>

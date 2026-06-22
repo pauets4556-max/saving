@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SavingSync">
+    <meta name="theme-color" content="#0a0e27">
+    <title>SavingSync</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { 
+            width: 100%;
+            height: 100%;
+            font-family: 'Courier New', monospace;
+            background: #0a0e27;
+            color: #00ff88;
+            overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #0a0e27, #1a1a3e);
+        }
+        .login-screen.hidden { display: none; }
+        .login-container {
+            background: rgba(30,30,60,0.9);
+            border: 2px solid #8b5ce6;
+            border-radius: 8px;
+            padding: 30px;
+            width: 100%;
+            max-width: 300px;
+            box-shadow: 0 0 30px rgba(139,92,246,0.3);
+        }
+        .login-container h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ff88;
+        }
+        .login-container p {
+            text-align: center;
+            font-size: 11px;
+            color: #00ff88;
+            opacity: 0.8;
+            margin-bottom: 24px;
+        }
+        .login-form { display: flex; flex-direction: column; }
+        .login-form label { font-size: 9px; color: #00ff88; margin-bottom: 4px; text-transform: uppercase; font-weight: bold; }
+        .login-form input {
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #8b5ce6;
+            background: rgba(15,15,46,0.9);
+            color: #00ff88;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 12px;
+        }
+        .login-form input:focus { outline: none; border-color: #00ff88; box-shadow: 0 0 10px rgba(0,255,136,0.3); }
+        .login-btn {
+            padding: 12px;
+            border: 1px solid #00ff88;
+            background: rgba(0,255,136,0.1);
+            color: #00ff88;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-family: inherit;
+            margin-top: 8px;
+        }
+        .error-msg { color: #ff0055; font-size: 10px; text-align: center; margin-bottom: 12px; min-height: 14px; }
+        .app-screen { display: none; flex-direction: column; height: 100%; }
+        .app-screen.active { display: flex; }
+        .header {
+            background: linear-gradient(90deg, rgba(0,255,136,0.1), rgba(139,92,246,0.1));
+            border-bottom: 2px solid #00ff88;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            padding-top: max(12px, env(safe-area-inset-top));
+        }
+        .header-left { display: flex; align-items: center; gap: 8px; }
+        .header h1 { font-size: 16px; }
+        .header-right { text-align: right; font-size: 10px; }
+        .balance { color: #8b5ce6; font-size: 12px; font-weight: bold; }
+        .user-info { font-size: 9px; color: #00ff88; opacity: 0.7; }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #00ff88;
+            background: rgba(0,255,136,0.05);
+            flex-shrink: 0;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: #00ff88;
+            cursor: pointer;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 3px solid transparent;
+            font-family: inherit;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .tab-btn.active {
+            color: #00ffcc;
+            border-bottom: 3px solid #00ff88;
+            background: rgba(0,255,136,0.1);
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+        }
+        .page { display: none; }
+        .page.show { display: block; }
+        .card {
+            background: rgba(30,30,60,0.8);
+            border: 1px solid #8b5ce6;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        .card h2 { font-size: 11px; color: #00ffcc; margin-bottom: 8px; text-transform: uppercase; }
+        label { display: block; font-size: 8px; color: #00ff88; margin-bottom: 2px; text-transform: uppercase; }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #8b5ce6;
+            background: rgba(15,15,46,0.9);
+            color: #00ff88;
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 12px;
+            -webkit-appearance: none;
+        }
+        input:focus, select:focus { outline: none; border-color: #00ff88; box-shadow: 0 0 10px rgba(0,255,136,0.3); }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #00ff88;
+            background: rgba(0,255,136,0.1);
+            color: #00ff88;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-family: inherit;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-danger {
+            border-color: #ff0055;
+            background: rgba(255,0,85,0.1);
+            color: #ff0055;
+        }
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+        .emoji-btn {
+            padding: 8px;
+            border: 1px solid #8b5ce6;
+            background: rgba(15,15,46,0.9);
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 18px;
+            font-family: inherit;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .emoji-btn.active { background: rgba(0,255,136,0.2); border-color: #00ff88; }
+        .stat {
+            background: rgba(15,15,46,0.9);
+            border: 1px solid #8b5ce6;
+            border-radius: 3px;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .stat-label { font-size: 8px; color: #00ff88; margin-bottom: 4px; text-transform: uppercase; }
+        .stat-val { font-size: 18px; font-weight: bold; color: #00ffcc; }
+        .transaction {
+            background: rgba(15,15,46,0.9);
+            border: 1px solid #8b5ce6;
+            border-radius: 3px;
+            padding: 8px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+        }
+        .empty { text-align: center; padding: 16px; opacity: 0.5; }
+        .monthly-savings {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .monthly-savings input { flex: 1; }
+        .monthly-savings button { flex: 1; padding: 8px; }
+    </style>
+</head>
+<body>
+    <!-- LOGIN SCREEN -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <h1>💾 SAVINGSYNC</h1>
+            <p>Control inteligente de tu ahorro</p>
+            <div class="login-form">
+                <div class="error-msg" id="errorMsg"></div>
+                <label>Usuario</label>
+                <input type="text" id="loginUser" placeholder="Tu nombre" autocomplete="off">
+                <label>Contraseña</label>
+                <input type="password" id="loginPass" placeholder="Tu contraseña" autocomplete="off">
+                <button class="login-btn" id="btnLogin">✓ INICIAR SESIÓN</button>
+                <p style="margin-top: 16px; text-align: center; font-size: 9px;">¿Primera vez?</p>
+                <button class="login-btn" id="btnRegister" style="background: rgba(139,92,246,0.1); border-color: #8b5ce6;">+ CREAR CUENTA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP SCREEN -->
+    <div class="app-screen" id="appScreen">
+        <div class="header">
+            <div class="header-left">
+                <span style="font-size: 16px;">💾</span>
+                <h1>SAVINGSYNC</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info" id="userDisplay">Usuario</div>
+                <div id="fecha" style="font-size: 9px; opacity: 0.8;"></div>
+                <div class="balance" id="balance">€0.00</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="0">→ REGISTRAR</button>
+            <button class="tab-btn" data-tab="1">→ HOY</button>
+            <button class="tab-btn" data-tab="2">→ MES</button>
+            <button class="tab-btn" data-tab="3">→ CONFIG</button>
+        </div>
+
+        <div class="content">
+            <!-- REGISTRAR -->
+            <div class="page show">
+                <div class="card">
+                    <h2>⚡ Nuevo Gasto</h2>
+                    <label>Categoría</label>
+                    <div class="emoji-grid" id="emojiGrid"></div>
+                    <label>Descripción</label>
+                    <input type="text" id="desc" placeholder="Compra">
+                    <label>Cantidad (€)</label>
+                    <input type="number" id="amount" placeholder="0.00" step="0.01" min="0">
+                    <label>Fecha</label>
+                    <input type="date" id="fecha_gasto">
+                    <button class="btn" id="btnRegistrar">✓ REGISTRAR</button>
+                </div>
+                <div class="card">
+                    <h2>📊 Últimos Gastos</h2>
+                    <div id="recent"></div>
+                </div>
+            </div>
+
+            <!-- HOY -->
+            <div class="page">
+                <div class="card">
+                    <h2>📅 Gastos de Hoy</h2>
+                    <div class="stat">
+                        <div class="stat-label">Total Hoy</div>
+                        <div class="stat-val" id="todayTotal">€0.00</div>
+                    </div>
+                    <div id="todayList"></div>
+                </div>
+            </div>
+
+            <!-- MES -->
+            <div class="page">
+                <div class="card">
+                    <h2>📊 Análisis del Mes</h2>
+                    <div class="stat">
+                        <div class="stat-label">Sueldo</div>
+                        <div class="stat-val" id="salaryDisplay">€0.00</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Gastos del Mes</div>
+                        <div class="stat-val" id="monthExpenses">€0.00</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Ahorro Disponible</div>
+                        <div class="stat-val" id="monthSavings">€0.00</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">% Ahorro</div>
+                        <div class="stat-val" id="savingsPercent">0%</div>
+                    </div>
+                    <div id="monthAnalysis"></div>
+                </div>
+
+                <div class="card">
+                    <h2>💰 Total Ahorro Acumulado</h2>
+                    <div class="stat">
+                        <div class="stat-label">Ahorro Total</div>
+                        <div class="stat-val" id="totalSavings">€0.00</div>
+                    </div>
+                    <label>Añadir Ahorro de Este Mes (€)</label>
+                    <div class="monthly-savings">
+                        <input type="number" id="monthlySavingsInput" placeholder="0.00" step="0.01" min="0">
+                        <button class="btn" id="btnAddMonthly" style="flex: 0.8;">+ AÑADIR</button>
+                    </div>
+                    <div id="savingsHistory"></div>
+                </div>
+            </div>
+
+            <!-- CONFIG -->
+            <div class="page">
+                <div class="card">
+                    <h2>👤 Cuenta</h2>
+                    <div style="background: rgba(15,15,46,0.9); border: 1px solid #8b5ce6; border-radius: 3px; padding: 10px; margin-bottom: 12px;">
+                        <div style="font-size: 10px; color: #00ff88;">Usuario:</div>
+                        <div style="font-size: 12px; color: #00ffcc; font-weight: bold;" id="userAccount">-</div>
+                    </div>
+                    <label>Contraseña Actual</label>
+                    <input type="password" id="currentPass" placeholder="Tu contraseña actual">
+                    <label>Nueva Contraseña</label>
+                    <input type="password" id="newPass" placeholder="Nueva contraseña">
+                    <label>Confirmar Contraseña</label>
+                    <input type="password" id="confirmPass" placeholder="Confirma la contraseña">
+                    <button class="btn" id="btnChangePass">✓ CAMBIAR CONTRASEÑA</button>
+                    <button class="btn btn-danger" id="btnLogout" style="margin-top: 12px;">🚪 CERRAR SESIÓN</button>
+                </div>
+
+                <div class="card">
+                    <h2>💰 Datos Personales</h2>
+                    <label>Sueldo Mensual (€)</label>
+                    <input type="number" id="salary" placeholder="2000" step="0.01" min="0">
+                    <label>Ahorro Base (€)</label>
+                    <input type="number" id="savings" placeholder="0" step="0.01" min="0">
+                    <button class="btn" id="btnConfig">✓ GUARDAR</button>
+                </div>
+
+                <div class="card">
+                    <h2>🏷️ Categorías</h2>
+                    <div id="catList"></div>
+                    <label>Nombre</label>
+                    <input type="text" id="catName" placeholder="Películas">
+                    <label>Emoji</label>
+                    <input type="text" id="catEmoji" placeholder="🎬" maxlength="2">
+                    <button class="btn" id="btnAddCat">+ CREAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // GESTIÓN DE USUARIOS
+        let currentUser = null;
+        let users = {};
+
+        function loadUsers() {
+            try {
+                const saved = localStorage.getItem('savingsync_users');
+                if (saved) users = JSON.parse(saved);
+            } catch (e) {}
+        }
+
+        function saveUsers() {
+            try {
+                localStorage.setItem('savingsync_users', JSON.stringify(users));
+            } catch (e) {}
+        }
+
+        function loadUserData() {
+            if (!currentUser) return;
+            try {
+                const userData = localStorage.getItem('savingsync_' + currentUser);
+                if (userData) state = JSON.parse(userData);
+            } catch (e) {}
+        }
+
+        function saveUserData() {
+            if (!currentUser) return;
+            try {
+                localStorage.setItem('savingsync_' + currentUser, JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        let state = {
+            salary: 2000,
+            savings: 0,
+            monthlySavingsHistory: [],
+            selectedCat: null,
+            selectedEmoji: null,
+            expenses: [],
+            categories: [
+                {name: 'Alimentación', emoji: '🛒'},
+                {name: 'Transporte', emoji: '🚗'},
+                {name: 'Entretenimiento', emoji: '🎬'},
+                {name: 'Servicios', emoji: '⚡'},
+                {name: 'Salud', emoji: '🏥'},
+                {name: 'Compras', emoji: '🛍️'},
+                {name: 'Restaurante', emoji: '🍽️'},
+                {name: 'Ocio', emoji: '🎮'},
+                {name: 'Gastos Fijos', emoji: '🏠'},
+                {name: 'Otros', emoji: '📌'}
+            ]
+        };
+
+        // LOGIN
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUsers();
+
+            document.getElementById('btnLogin').addEventListener('click', function() {
+                const user = document.getElementById('loginUser').value.trim();
+                const pass = document.getElementById('loginPass').value;
+                
+                if (!user || !pass) {
+                    document.getElementById('errorMsg').textContent = 'Completa usuario y contraseña';
+                    return;
+                }
+
+                if (!users[user] || users[user] !== pass) {
+                    document.getElementById('errorMsg').textContent = 'Usuario o contraseña incorrectos';
+                    return;
+                }
+
+                currentUser = user;
+                loadUserData();
+                showApp();
+            });
+
+            document.getElementById('btnRegister').addEventListener('click', function() {
+                const user = document.getElementById('loginUser').value.trim();
+                const pass = document.getElementById('loginPass').value;
+                
+                if (!user || !pass) {
+                    document.getElementById('errorMsg').textContent = 'Completa usuario y contraseña';
+                    return;
+                }
+
+                if (users[user]) {
+                    document.getElementById('errorMsg').textContent = 'Usuario ya existe';
+                    return;
+                }
+
+                if (pass.length < 4) {
+                    document.getElementById('errorMsg').textContent = 'Contraseña mínimo 4 caracteres';
+                    return;
+                }
+
+                users[user] = pass;
+                saveUsers();
+                currentUser = user;
+                state = {
+                    salary: 2000,
+                    savings: 0,
+                    monthlySavingsHistory: [],
+                    selectedCat: null,
+                    selectedEmoji: null,
+                    expenses: [],
+                    categories: [
+                        {name: 'Alimentación', emoji: '🛒'},
+                        {name: 'Transporte', emoji: '🚗'},
+                        {name: 'Entretenimiento', emoji: '🎬'},
+                        {name: 'Servicios', emoji: '⚡'},
+                        {name: 'Salud', emoji: '🏥'},
+                        {name: 'Compras', emoji: '🛍️'},
+                        {name: 'Restaurante', emoji: '🍽️'},
+                        {name: 'Ocio', emoji: '🎮'},
+                        {name: 'Gastos Fijos', emoji: '🏠'},
+                        {name: 'Otros', emoji: '📌'}
+                    ]
+                };
+                saveUserData();
+                showApp();
+            });
+
+            document.getElementById('btnLogout').addEventListener('click', function() {
+                if (confirm('¿Cerrar sesión?')) {
+                    saveUserData();
+                    currentUser = null;
+                    document.getElementById('loginUser').value = '';
+                    document.getElementById('loginPass').value = '';
+                    document.getElementById('errorMsg').textContent = '';
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                    document.getElementById('appScreen').classList.remove('active');
+                }
+            });
+
+            document.getElementById('btnChangePass').addEventListener('click', function() {
+                const current = document.getElementById('currentPass').value;
+                const newP = document.getElementById('newPass').value;
+                const confirm = document.getElementById('confirmPass').value;
+
+                if (!current || !newP || !confirm) {
+                    alert('Completa todos los campos');
+                    return;
+                }
+
+                if (users[currentUser] !== current) {
+                    alert('Contraseña actual incorrecta');
+                    return;
+                }
+
+                if (newP.length < 4) {
+                    alert('Contraseña mínimo 4 caracteres');
+                    return;
+                }
+
+                if (newP !== confirm) {
+                    alert('Las contraseñas no coinciden');
+                    return;
+                }
+
+                users[currentUser] = newP;
+                saveUsers();
+                document.getElementById('currentPass').value = '';
+                document.getElementById('newPass').value = '';
+                document.getElementById('confirmPass').value = '';
+                alert('✓ Contraseña cambiada');
+            });
+
+            // REGISTRAR GASTO
+            document.getElementById('btnRegistrar').addEventListener('click', function() {
+                if (!state.selectedCat) { alert('Selecciona categoría'); return; }
+                const desc = document.getElementById('desc').value.trim();
+                if (!desc) { alert('Describe el gasto'); return; }
+                const amount = parseFloat(document.getElementById('amount').value);
+                if (!amount || amount <= 0) { alert('Cantidad inválida'); return; }
+                
+                state.expenses.push({
+                    id: Date.now(),
+                    cat: state.selectedCat,
+                    emoji: state.selectedEmoji,
+                    desc: desc,
+                    amount: amount,
+                    date: document.getElementById('fecha_gasto').value
+                });
+                
+                saveUserData();
+                document.getElementById('desc').value = '';
+                document.getElementById('amount').value = '';
+                state.selectedCat = null;
+                state.selectedEmoji = null;
+                renderUI();
+            });
+            
+            document.getElementById('btnConfig').addEventListener('click', function() {
+                const salary = parseFloat(document.getElementById('salary').value);
+                const savings = parseFloat(document.getElementById('savings').value);
+                if (!salary || salary <= 0) { alert('Sueldo inválido'); return; }
+                if (isNaN(savings) || savings < 0) { alert('Ahorro inválido'); return; }
+                
+                state.salary = salary;
+                state.savings = savings;
+                saveUserData();
+                renderUI();
+                updateMonth();
+                alert('✓ Guardado');
+            });
+            
+            document.getElementById('btnAddMonthly').addEventListener('click', function() {
+                const amount = parseFloat(document.getElementById('monthlySavingsInput').value);
+                if (!amount || amount <= 0) { alert('Cantidad inválida'); return; }
+                
+                const month = new Date().toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+                state.monthlySavingsHistory.push({
+                    date: new Date().toISOString(),
+                    month: month,
+                    amount: amount
+                });
+                
+                state.savings += amount;
+                saveUserData();
+                document.getElementById('monthlySavingsInput').value = '';
+                renderUI();
+                updateMonth();
+                alert('✓ Ahorro añadido');
+            });
+            
+            document.getElementById('btnAddCat').addEventListener('click', function() {
+                const name = document.getElementById('catName').value.trim();
+                const emoji = document.getElementById('catEmoji').value.trim();
+                if (!name || !emoji) { alert('Completa campos'); return; }
+                if (state.categories.find(c => c.name === name)) { alert('Ya existe'); return; }
+                
+                state.categories.push({name, emoji});
+                saveUserData();
+                document.getElementById('catName').value = '';
+                document.getElementById('catEmoji').value = '';
+                renderUI();
+            });
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tab = this.dataset.tab;
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.page')[tab].classList.add('show');
+                    
+                    if (tab === '2') updateMonth();
+                });
+            });
+        });
+
+        function showApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.add('active');
+            document.getElementById('userDisplay').textContent = currentUser;
+            document.getElementById('userAccount').textContent = currentUser;
+            document.getElementById('fecha_gasto').valueAsDate = new Date();
+            renderUI();
+        }
+
+        function renderUI() {
+            const today = new Date().toLocaleDateString('es-ES', {weekday: 'short', month: 'short', day: 'numeric'}).toUpperCase();
+            document.getElementById('fecha').textContent = today;
+            document.getElementById('balance').textContent = '€' + state.savings.toFixed(2);
+            
+            renderEmojis();
+            renderCats();
+            updateRecent();
+            updateToday();
+        }
+
+        function renderEmojis() {
+            const html = state.categories.map(cat => `
+                <button class="emoji-btn ${state.selectedCat === cat.name ? 'active' : ''}" data-cat="${cat.name}" data-emoji="${cat.emoji}">
+                    ${cat.emoji}
+                </button>
+            `).join('');
+            document.getElementById('emojiGrid').innerHTML = html;
+            
+            document.querySelectorAll('.emoji-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    state.selectedCat = this.dataset.cat;
+                    state.selectedEmoji = this.dataset.emoji;
+                    renderEmojis();
+                });
+            });
+        }
+
+        function updateRecent() {
+            const recent = state.expenses.slice(-10).reverse();
+            const html = recent.length ? recent.map(e => `
+                <div class="transaction">
+                    <div>
+                        <div style="color: #00ffcc; font-weight: bold;">${e.emoji} ${e.cat}</div>
+                        <div style="color: #00ff88; opacity: 0.7; font-size: 8px;">${e.desc}</div>
+                    </div>
+                    <div style="color: #ff0055; font-weight: bold;">-€${e.amount.toFixed(2)}</div>
+                </div>
+            `).join('') : '<div class="empty">[SIN GASTOS]</div>';
+            document.getElementById('recent').innerHTML = html;
+        }
+
+        function updateToday() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayExp = state.expenses.filter(e => e.date === today);
+            const total = todayExp.reduce((s, e) => s + e.amount, 0);
+            document.getElementById('todayTotal').textContent = '€' + total.toFixed(2);
+            
+            const html = todayExp.length ? todayExp.map(e => `
+                <div class="transaction">
+                    <div style="flex: 1;">
+                        <div style="color: #00ffcc; font-weight: bold;">${e.emoji} ${e.cat}</div>
+                        <div style="color: #00ff88; opacity: 0.7; font-size: 8px;">${e.desc}</div>
+                    </div>
+                    <div style="color: #ff0055; font-weight: bold;">-€${e.amount.toFixed(2)}</div>
+                </div>
+            `).join('') : '<div class="empty">[SIN GASTOS HOY]</div>';
+            document.getElementById('todayList').innerHTML = html;
+        }
+
+        function updateMonth() {
+            const month = new Date().getMonth();
+            const year = new Date().getFullYear();
+            const monthExp = state.expenses.filter(e => {
+                const d = new Date(e.date);
+                return d.getMonth() === month && d.getFullYear() === year;
+            });
+            
+            const total = monthExp.reduce((s, e) => s + e.amount, 0);
+            const available = Math.max(0, state.salary - total);
+            const percent = state.salary > 0 ? (available / state.salary * 100).toFixed(1) : 0;
+            
+            document.getElementById('salaryDisplay').textContent = '€' + state.salary.toFixed(2);
+            document.getElementById('monthExpenses').textContent = '€' + total.toFixed(2);
+            document.getElementById('monthSavings').textContent = '€' + available.toFixed(2);
+            document.getElementById('savingsPercent').textContent = percent + '%';
+            document.getElementById('totalSavings').textContent = '€' + state.savings.toFixed(2);
+            
+            const history = state.monthlySavingsHistory.slice(-6).reverse();
+            const historyHtml = history.length ? history.map(h => `
+                <div style="background: rgba(15,15,46,0.9); border: 1px solid #8b5ce6; border-radius: 3px; padding: 8px; margin-bottom: 6px; font-size: 9px;">
+                    <div style="color: #00ffcc; font-weight: bold;">${h.month}</div>
+                    <div style="color: #00ff88;">+€${h.amount.toFixed(2)}</div>
+                </div>
+            `).join('') : '<div class="empty">[SIN REGISTRO]</div>';
+            document.getElementById('savingsHistory').innerHTML = historyHtml;
+            
+            let analysis = '';
+            if (percent >= 25) analysis = '<div style="color: #00ff88; margin-top: 8px;">✅ ¡Excelente! Ahorras ' + percent + '%</div>';
+            else if (percent >= 15) analysis = '<div style="color: #00ff88; margin-top: 8px;">📊 Ahorras ' + percent + '%</div>';
+            else if (percent > 0) analysis = '<div style="color: #ff8800; margin-top: 8px;">⚠️ Solo ahorras ' + percent + '%</div>';
+            else analysis = '<div style="color: #ff0055; margin-top: 8px;">🚨 No hay ahorro</div>';
+            
+            document.getElementById('monthAnalysis').innerHTML = analysis;
+        }
+
+        function renderCats() {
+            const html = state.categories.map(cat => `
+                <div style="display: flex; justify-content: space-between; padding: 8px; background: rgba(15,15,46,0.9); border: 1px solid #8b5ce6; border-radius: 3px; margin-bottom: 6px; align-items: center;">
+                    <span><span style="font-size: 16px; margin-right: 6px;">${cat.emoji}</span>${cat.name}</span>
+                    <button style="background: none; border: none; color: #ff0055; cursor: pointer; font-family: inherit; font-size: 14px;" data-del="${cat.name}">✕</button>
+                </div>
+            `).join('');
+            document.getElementById('catList').innerHTML = html;
+            
+            document.querySelectorAll('[data-del]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    state.categories = state.categories.filter(c => c.name !== this.dataset.del);
+                    saveUserData();
+                    renderUI();
+                });
+            });
+        }
+    </script>
+</body>
+</html>
